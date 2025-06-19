@@ -2,7 +2,7 @@ import { PrismaService } from '@/shared/prisma/prisma.service';
 import {
   ConflictException,
   Injectable,
-  NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { User } from 'generated/prisma';
 import { CreateUserDto } from './dto/createUser.dto';
@@ -21,7 +21,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     return user;
@@ -32,7 +32,7 @@ export class UsersService {
       where: { id },
     });
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new UnauthorizedException('Invalid email or password');
     }
     return user;
   }
