@@ -16,13 +16,13 @@ describe('PrismaService', () => {
     expect(service).toBeDefined();
   });
   it('should call $connect when onModuleInit is called', async () => {
-    const connectSpy = jest.spyOn(service.prisma, '$connect');
+    const connectSpy = jest.spyOn(service, '$connect');
     await service.onModuleInit();
     expect(connectSpy).toHaveBeenCalled();
   });
 
   it('should disconnect from the database on module destroy', async () => {
-    const disconnectSpy = jest.spyOn(service.prisma, '$disconnect');
+    const disconnectSpy = jest.spyOn(service, '$disconnect');
     await service.onModuleDestroy();
     expect(disconnectSpy).toHaveBeenCalled();
   });
@@ -32,6 +32,6 @@ describe('PrismaService', () => {
   });
 
   afterAll(async () => {
-    await service.prisma.$disconnect();
+    await service.$disconnect();
   });
 });
