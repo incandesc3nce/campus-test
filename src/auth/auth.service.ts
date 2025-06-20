@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { HashingService } from '../shared/hashing/hashing.service';
 import { RegisterDto } from './dto/register.dto';
+import { JwtPayload } from '@/shared/types/JwtPayload';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const payload = { sub: user.id, email: user.email };
+    const payload: JwtPayload = { sub: user.id, email: user.email };
 
     return {
       accessToken: await this.jwtService.signAsync(payload),
