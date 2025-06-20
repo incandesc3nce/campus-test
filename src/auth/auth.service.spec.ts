@@ -6,23 +6,49 @@ import { UnauthorizedException } from '@nestjs/common';
 import { HashingService } from '@/shared/hashing/hashing.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { PrismaService } from '@/shared/prisma/prisma.service';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let usersService: UsersService;
-  let jwtService: JwtService;
-  let hashingService: HashingService;
+  let _usersService: UsersService;
+  let _jwtService: JwtService;
+  let _hashingService: HashingService;
+
+  const mockUsersService = {
+    findOneByEmail: jest.fn(),
+    createUser: jest.fn(),
+  };
+
+  const mockJwtService = {
+    signAsync: jest.fn(),
+  };
+
+  const mockHashingService = {
+    verifyPassword: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, UsersService, JwtService, HashingService, PrismaService],
+      providers: [
+        AuthService,
+        {
+          provide: UsersService,
+          useValue: mockUsersService,
+        },
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+        {
+          provide: HashingService,
+          useValue: mockHashingService,
+        },
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
-    usersService = module.get<UsersService>(UsersService);
-    jwtService = module.get<JwtService>(JwtService);
-    hashingService = module.get<HashingService>(HashingService);
+    _usersService = module.get<UsersService>(UsersService);
+    _jwtService = module.get<JwtService>(JwtService);
+    _hashingService = module.get<HashingService>(HashingService);
   });
 
   afterEach(() => {
@@ -34,6 +60,10 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
+    const findOne = mockUsersService.findOneByEmail;
+    const verifyPassword = mockHashingService.verifyPassword;
+    const signAsync = mockJwtService.signAsync;
+
     it('should return access token when credentials are valid', async () => {
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -49,24 +79,18 @@ describe('AuthService', () => {
 
       const expectedToken = 'jwt-token';
 
-      const findOneByEmailSpy = jest
-        .spyOn(usersService, 'findOneByEmail')
-        .mockResolvedValue(mockUser);
-      const verifyPasswordSpy = jest
-        .spyOn(hashingService, 'verifyPassword')
-        .mockResolvedValue(true);
-      const signAsyncSpy = jest
-        .spyOn(jwtService, 'signAsync')
-        .mockResolvedValue(expectedToken);
+      findOne.mockResolvedValue(mockUser);
+      verifyPassword.mockResolvedValue(true);
+      signAsync.mockResolvedValue(expectedToken);
 
       const result = await service.login(loginDto);
 
-      expect(findOneByEmailSpy).toHaveBeenCalledWith(loginDto.email);
-      expect(verifyPasswordSpy).toHaveBeenCalledWith(
+      expect(findOne).toHaveBeenCalledWith(loginDto.email);
+      expect(verifyPassword).toHaveBeenCalledWith(
         loginDto.password,
         mockUser.passwordHash
       );
-      expect(signAsyncSpy).toHaveBeenCalledWith(
+      expect(signAsync).toHaveBeenCalledWith(
         { sub: mockUser.id, email: mockUser.email },
         { expiresIn: '3d' }
       );
@@ -89,30 +113,26 @@ describe('AuthService', () => {
         passwordHash: 'hashed-password',
       };
 
-      const findOneByEmailSpy = jest
-        .spyOn(usersService, 'findOneByEmail')
-        .mockResolvedValue(mockUser);
-      const verifyPasswordSpy = jest
-        .spyOn(hashingService, 'verifyPassword')
-        .mockResolvedValue(false);
-      const signAsyncSpy = jest
-        .spyOn(jwtService, 'signAsync')
-        .mockResolvedValue('jwt-token');
+      findOne.mockResolvedValue(mockUser);
+      verifyPassword.mockResolvedValue(false);
+      signAsync.mockResolvedValue('jwt-token');
 
       await expect(service.login(loginDto)).rejects.toThrow(
         new UnauthorizedException('Invalid email or password')
       );
 
-      expect(findOneByEmailSpy).toHaveBeenCalledWith(loginDto.email);
-      expect(verifyPasswordSpy).toHaveBeenCalledWith(
+      expect(findOne).toHaveBeenCalledWith(loginDto.email);
+      expect(verifyPassword).toHaveBeenCalledWith(
         loginDto.password,
         mockUser.passwordHash
       );
-      expect(signAsyncSpy).not.toHaveBeenCalled();
+      expect(signAsync).not.toHaveBeenCalled();
     });
   });
 
   describe('register', () => {
+    const createUser = mockUsersService.createUser;
+    const signAsync = mockJwtService.signAsync;
     it('should create a user and return access token', async () => {
       const registerDto: RegisterDto = {
         email: 'newuser@example.com',
@@ -130,21 +150,17 @@ describe('AuthService', () => {
 
       const expectedToken = 'jwt-token';
 
-      const createUserSpy = jest
-        .spyOn(usersService, 'createUser')
-        .mockResolvedValue(mockCreatedUser);
-      const signAsyncSpy = jest
-        .spyOn(jwtService, 'signAsync')
-        .mockResolvedValue(expectedToken);
+      createUser.mockResolvedValue(mockCreatedUser);
+      signAsync.mockResolvedValue(expectedToken);
 
       const result = await service.register(registerDto);
 
-      expect(createUserSpy).toHaveBeenCalledWith({
+      expect(createUser).toHaveBeenCalledWith({
         email: registerDto.email,
         name: registerDto.name,
         password: registerDto.password,
       });
-      expect(signAsyncSpy).toHaveBeenCalledWith(
+      expect(signAsync).toHaveBeenCalledWith(
         { sub: mockCreatedUser.id, email: mockCreatedUser.email },
         { expiresIn: '3d' }
       );

@@ -10,23 +10,29 @@ import {
   INestApplication,
 } from '@nestjs/common';
 import { validate } from 'class-validator';
-import { UsersService } from '@/users/users.service';
-import { JwtService } from '@nestjs/jwt';
-import { HashingService } from '@/shared/hashing/hashing.service';
-import { PrismaService } from '@/shared/prisma/prisma.service';
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let authService: AuthService;
+  let _authService: jest.Mocked<AuthService>;
+
+  const mockAuthService = {
+    login: jest.fn(),
+    register: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [AuthService, UsersService, JwtService, HashingService, PrismaService],
+      providers: [
+        {
+          provide: AuthService,
+          useValue: mockAuthService,
+        },
+      ],
     }).compile();
 
     controller = module.get(AuthController);
-    authService = module.get(AuthService);
+    _authService = module.get(AuthService);
   });
 
   afterEach(() => {
@@ -49,12 +55,11 @@ describe('AuthController', () => {
         expiresIn: '3d',
       };
 
-      const loginSpy = jest
-        .spyOn(authService, 'login')
-        .mockResolvedValue(expectedResponse);
+      const login = mockAuthService.login.mockResolvedValue(expectedResponse);
 
       const result = await controller.login(loginDto);
-      expect(loginSpy).toHaveBeenCalledWith(loginDto);
+
+      expect(login).toHaveBeenCalledWith(loginDto);
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('expiresIn');
     });
@@ -65,12 +70,12 @@ describe('AuthController', () => {
         password: 'WrongPassword123',
       };
 
-      const loginSpy = jest
-        .spyOn(authService, 'login')
-        .mockRejectedValue(new UnauthorizedException('Invalid email or password'));
+      const login = mockAuthService.login.mockRejectedValue(
+        new UnauthorizedException('Invalid email or password')
+      );
 
-      expect(loginSpy).not.toHaveBeenCalledWith(loginDto);
       await expect(controller.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      expect(login).toHaveBeenCalledWith(loginDto);
     });
   });
 
@@ -88,13 +93,11 @@ describe('AuthController', () => {
         expiresIn: '3d',
       };
 
-      const registerSpy = jest
-        .spyOn(authService, 'register')
-        .mockResolvedValue(expectedResponse);
+      const register = mockAuthService.register.mockResolvedValue(expectedResponse);
 
       const result = await controller.register(registerDto);
 
-      expect(registerSpy).toHaveBeenCalledWith(registerDto);
+      expect(register).toHaveBeenCalledWith(registerDto);
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('expiresIn');
     });
@@ -109,22 +112,17 @@ describe('AuthController', () => {
 
       const conflictError = new ConflictException('User with this email already exists');
 
-      const registerSpy = jest
-        .spyOn(authService, 'register')
-        .mockRejectedValue(conflictError);
+      const register = mockAuthService.register.mockRejectedValue(conflictError);
 
-      registerSpy.mockRejectedValue(conflictError);
-
-      expect(registerSpy).not.toHaveBeenCalledWith(registerDto);
       await expect(controller.register(registerDto)).rejects.toThrow(
         'User with this email already exists'
       );
+      expect(register).toHaveBeenCalledWith(registerDto);
     });
   });
 
   describe('DTO Validation', () => {
     let app: INestApplication;
-    let validationPipe;
 
     beforeEach(async () => {
       const moduleRef = await Test.createTestingModule({
@@ -132,16 +130,13 @@ describe('AuthController', () => {
         providers: [
           {
             provide: AuthService,
-            useValue: {
-              login: jest.fn(),
-              register: jest.fn(),
-            },
+            useValue: mockAuthService,
           },
         ],
       }).compile();
 
       app = moduleRef.createNestApplication();
-      validationPipe = new ValidationPipe({
+      const validationPipe = new ValidationPipe({
         transform: true,
         whitelist: true,
         forbidNonWhitelisted: true,
@@ -261,12 +256,12 @@ describe('AuthController', () => {
         expect(errors[0].constraints).toHaveProperty('isNotEmpty');
       });
 
-      it('should reject too long name', async () => {
+      it('should reject long name', async () => {
         const registerDto = {
           email: 'test@example.com',
           password: 'ValidPass123',
           confirmPassword: 'ValidPass123',
-          name: 'A'.repeat(101), // 101 characters
+          name: 'A'.repeat(101),
         };
 
         const errors = await validate(Object.assign(new RegisterDto(), registerDto));

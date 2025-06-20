@@ -19,9 +19,19 @@ describe('AuthGuard', () => {
     return mockContext;
   };
 
+  const mockJwtService = {
+    verifyAsync: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthGuard, JwtService],
+      providers: [
+        AuthGuard,
+        {
+          provide: JwtService,
+          useValue: mockJwtService,
+        },
+      ],
     }).compile();
 
     guard = module.get<AuthGuard>(AuthGuard);
@@ -38,7 +48,7 @@ describe('AuthGuard', () => {
   });
 
   describe('canActivate', () => {
-    const verifyAsyncSpy = jest.spyOn(JwtService.prototype, 'verifyAsync');
+    const verifyAsync = mockJwtService.verifyAsync;
 
     it('should return true for valid token', async () => {
       const mockToken = 'valid-token';
@@ -47,11 +57,11 @@ describe('AuthGuard', () => {
         authorization: `Bearer ${mockToken}`,
       });
 
-      verifyAsyncSpy.mockResolvedValue(mockPayload);
+      verifyAsync.mockResolvedValue(mockPayload);
 
       const result = await guard.canActivate(mockContext);
 
-      expect(verifyAsyncSpy).toHaveBeenCalledWith(mockToken, {
+      expect(verifyAsync).toHaveBeenCalledWith(mockToken, {
         secret: 'test-secret',
       });
       const request: Request & { user?: JwtPayload } = mockContext
@@ -67,7 +77,7 @@ describe('AuthGuard', () => {
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('You must be logged in to access this resource')
       );
-      expect(verifyAsyncSpy).not.toHaveBeenCalled();
+      expect(verifyAsync).not.toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException when token is invalid', async () => {
@@ -76,12 +86,12 @@ describe('AuthGuard', () => {
         authorization: `Bearer ${mockToken}`,
       });
 
-      verifyAsyncSpy.mockRejectedValue(new UnauthorizedException('Invalid token'));
+      verifyAsync.mockRejectedValue(new UnauthorizedException('Invalid token'));
 
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('Invalid token')
       );
-      expect(verifyAsyncSpy).toHaveBeenCalledWith(mockToken, {
+      expect(verifyAsync).toHaveBeenCalledWith(mockToken, {
         secret: 'test-secret',
       });
     });
@@ -94,7 +104,7 @@ describe('AuthGuard', () => {
       await expect(guard.canActivate(mockContext)).rejects.toThrow(
         new UnauthorizedException('You must be logged in to access this resource')
       );
-      expect(verifyAsyncSpy).not.toHaveBeenCalled();
+      expect(verifyAsync).not.toHaveBeenCalled();
     });
   });
 });
