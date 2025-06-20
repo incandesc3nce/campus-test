@@ -18,9 +18,7 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request & { tokenPayload?: JwtPayload } = context
-      .switchToHttp()
-      .getRequest<Request>();
+    const req: Request & { user?: JwtPayload } = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(req);
 
     if (!token) {
@@ -32,7 +30,7 @@ export class AuthGuard implements CanActivate {
         secret: process.env.JWT_SECRET,
       });
 
-      req['tokenPayload'] = payload;
+      req['user'] = payload;
     } catch {
       throw new UnauthorizedException('Invalid token');
     }
