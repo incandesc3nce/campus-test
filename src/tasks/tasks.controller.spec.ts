@@ -10,15 +10,20 @@ import { NotFoundException } from '@nestjs/common';
 import { TaskResponseDto } from './dto/taskResponse.dto';
 import { FilteredTasksResponseDto } from './dto/filteredTaskResponse.dto';
 import { validate } from 'class-validator';
-import { PrismaService } from '@/shared/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '@/auth/auth.service';
-import { UsersService } from '@/users/users.service';
-import { HashingService } from '@/shared/hashing/hashing.service';
 
 describe('TasksController', () => {
   let controller: TasksController;
-  let service: TasksService;
+  let _service: TasksService;
+  let _jwtService: JwtService;
+
+  const mockTasksService = {
+    createTask: jest.fn(),
+    findAll: jest.fn(),
+    findOne: jest.fn(),
+    updateTask: jest.fn(),
+    deleteTask: jest.fn(),
+  };
 
   const mockUser: JwtPayload = {
     sub: 'user-123',
@@ -29,17 +34,18 @@ describe('TasksController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TasksController],
       providers: [
-        TasksService,
-        AuthService,
-        JwtService,
-        PrismaService,
-        UsersService,
-        HashingService,
+        { provide: TasksService, useValue: mockTasksService },
+        {
+          provide: JwtService,
+          useValue: {
+            signAsync: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     controller = module.get<TasksController>(TasksController);
-    service = module.get<TasksService>(TasksService);
+    _service = module.get<TasksService>(TasksService);
   });
 
   afterEach(() => {
@@ -51,6 +57,7 @@ describe('TasksController', () => {
   });
 
   describe('create', () => {
+    const create = mockTasksService.createTask;
     it('should create a new task', async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'New Task',
@@ -67,18 +74,18 @@ describe('TasksController', () => {
         updatedAt: new Date(),
       };
 
-      const createTaskSpy = jest
-        .spyOn(service, 'createTask')
-        .mockResolvedValue(expectedResult);
+      create.mockResolvedValue(expectedResult);
 
       const result = await controller.create(createTaskDto, mockUser);
 
-      expect(createTaskSpy).toHaveBeenCalledWith(createTaskDto, mockUser.sub);
+      expect(create).toHaveBeenCalledWith(createTaskDto, mockUser.sub);
       expect(result).toEqual(expectedResult);
     });
   });
 
   describe('findAll', () => {
+    const findAll = mockTasksService.findAll;
+
     it('should return filtered tasks with pagination', async () => {
       const query: TaskQueryDto = {
         status: TaskStatus.TODO,
@@ -102,16 +109,18 @@ describe('TasksController', () => {
         offset: 0,
       };
 
-      const findAllSpy = jest.spyOn(service, 'findAll').mockResolvedValue(expectedResult);
+      findAll.mockResolvedValue(expectedResult);
 
       const result = await controller.findAll(query, mockUser);
 
-      expect(findAllSpy).toHaveBeenCalledWith(query, mockUser.sub);
+      expect(findAll).toHaveBeenCalledWith(query, mockUser.sub);
       expect(result).toEqual(expectedResult);
     });
   });
 
   describe('findOne', () => {
+    const findOne = mockTasksService.findOne;
+
     it('should return a task by id', async () => {
       const taskId = 'task-123';
       const expectedResult: TaskResponseDto = {
@@ -123,28 +132,28 @@ describe('TasksController', () => {
         updatedAt: new Date(),
       };
 
-      const findOneSpy = jest.spyOn(service, 'findOne').mockResolvedValue(expectedResult);
+      findOne.mockResolvedValue(expectedResult);
 
       const result = await controller.findOne(taskId, mockUser);
 
-      expect(findOneSpy).toHaveBeenCalledWith(taskId, mockUser.sub);
+      expect(findOne).toHaveBeenCalledWith(taskId, mockUser.sub);
       expect(result).toEqual(expectedResult);
     });
 
     it('should propagate NotFoundException when task is not found', async () => {
       const taskId = 'non-existent-task';
-      const findOneSpy = jest
-        .spyOn(service, 'findOne')
-        .mockRejectedValue(new NotFoundException('Task not found'));
+      findOne.mockRejectedValue(new NotFoundException('Task not found'));
 
       await expect(controller.findOne(taskId, mockUser)).rejects.toThrow(
         NotFoundException
       );
-      expect(findOneSpy).toHaveBeenCalledWith(taskId, mockUser.sub);
+      expect(findOne).toHaveBeenCalledWith(taskId, mockUser.sub);
     });
   });
 
   describe('update', () => {
+    const updateTask = mockTasksService.updateTask;
+
     it('should update a task', async () => {
       const taskId = 'task-123';
       const updateTaskDto: UpdateTaskDto = {
@@ -161,13 +170,11 @@ describe('TasksController', () => {
         updatedAt: new Date(),
       };
 
-      const updateTaskSpy = jest
-        .spyOn(service, 'updateTask')
-        .mockResolvedValue(expectedResult);
+      updateTask.mockResolvedValue(expectedResult);
 
       const result = await controller.update(taskId, updateTaskDto, mockUser);
 
-      expect(updateTaskSpy).toHaveBeenCalledWith(taskId, updateTaskDto, mockUser.sub);
+      expect(updateTask).toHaveBeenCalledWith(taskId, updateTaskDto, mockUser.sub);
       expect(result).toEqual(expectedResult);
     });
 
@@ -177,39 +184,35 @@ describe('TasksController', () => {
         title: 'Updated Task',
       };
 
-      const updateTaskSpy = jest
-        .spyOn(service, 'updateTask')
-        .mockRejectedValue(new NotFoundException('Task not found'));
+      updateTask.mockRejectedValue(new NotFoundException('Task not found'));
 
       await expect(controller.update(taskId, updateTaskDto, mockUser)).rejects.toThrow(
         NotFoundException
       );
-      expect(updateTaskSpy).toHaveBeenCalledWith(taskId, updateTaskDto, mockUser.sub);
+      expect(updateTask).toHaveBeenCalledWith(taskId, updateTaskDto, mockUser.sub);
     });
   });
 
   describe('delete', () => {
+    const deleteTask = mockTasksService.deleteTask;
+
     it('should delete a task', async () => {
       const taskId = 'task-123';
-      const deleteTaskSpy = jest
-        .spyOn(service, 'deleteTask')
-        .mockResolvedValue(undefined);
+      deleteTask.mockResolvedValue(undefined);
 
       await controller.delete(taskId, mockUser);
 
-      expect(deleteTaskSpy).toHaveBeenCalledWith(taskId, mockUser.sub);
+      expect(deleteTask).toHaveBeenCalledWith(taskId, mockUser.sub);
     });
 
     it('should propagate NotFoundException when task to delete is not found', async () => {
       const taskId = 'non-existent-task';
-      const deleteTaskSpy = jest
-        .spyOn(service, 'deleteTask')
-        .mockRejectedValue(new NotFoundException('Task not found'));
+      deleteTask.mockRejectedValue(new NotFoundException('Task not found'));
 
       await expect(controller.delete(taskId, mockUser)).rejects.toThrow(
         NotFoundException
       );
-      expect(deleteTaskSpy).toHaveBeenCalledWith(taskId, mockUser.sub);
+      expect(deleteTask).toHaveBeenCalledWith(taskId, mockUser.sub);
     });
   });
 

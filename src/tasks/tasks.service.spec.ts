@@ -58,6 +58,8 @@ describe('TasksService', () => {
   });
 
   describe('createTask', () => {
+    const create = mockPrismaService.task.create;
+
     it('should create a task successfully', async () => {
       const createTaskDto: CreateTaskDto = {
         title: 'New Task',
@@ -65,11 +67,11 @@ describe('TasksService', () => {
         status: TaskStatus.TODO,
       };
 
-      mockPrismaService.task.create.mockResolvedValue(mockTask);
+      create.mockResolvedValue(mockTask);
 
       const result = await service.createTask(createTaskDto, mockUserId);
 
-      expect(mockPrismaService.task.create).toHaveBeenCalledWith({
+      expect(create).toHaveBeenCalledWith({
         data: {
           title: createTaskDto.title,
           description: createTaskDto.description,
@@ -90,6 +92,9 @@ describe('TasksService', () => {
   });
 
   describe('findAll', () => {
+    const findMany = mockPrismaService.task.findMany;
+    const count = mockPrismaService.task.count;
+
     it('should return filtered tasks with pagination', async () => {
       const query: TaskQueryDto = {
         status: TaskStatus.TODO,
@@ -100,12 +105,12 @@ describe('TasksService', () => {
       const mockTasks = [mockTask];
       const mockCount = 1;
 
-      mockPrismaService.task.findMany.mockResolvedValue(mockTasks);
-      mockPrismaService.task.count.mockResolvedValue(mockCount);
+      findMany.mockResolvedValue(mockTasks);
+      count.mockResolvedValue(mockCount);
 
       const result = await service.findAll(query, mockUserId);
 
-      expect(mockPrismaService.task.findMany).toHaveBeenCalledWith({
+      expect(findMany).toHaveBeenCalledWith({
         where: {
           userId: mockUserId,
           status: query.status,
@@ -125,7 +130,7 @@ describe('TasksService', () => {
         },
       });
 
-      expect(mockPrismaService.task.count).toHaveBeenCalledWith({
+      expect(count).toHaveBeenCalledWith({
         where: {
           userId: mockUserId,
           status: query.status,
@@ -148,12 +153,12 @@ describe('TasksService', () => {
       const mockTasks = [mockTask];
       const mockCount = 1;
 
-      mockPrismaService.task.findMany.mockResolvedValue(mockTasks);
-      mockPrismaService.task.count.mockResolvedValue(mockCount);
+      findMany.mockResolvedValue(mockTasks);
+      count.mockResolvedValue(mockCount);
 
       const result = await service.findAll(query, mockUserId);
 
-      expect(mockPrismaService.task.findMany).toHaveBeenCalledWith(
+      expect(findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 0,
           take: 10,
@@ -170,12 +175,14 @@ describe('TasksService', () => {
   });
 
   describe('findOne', () => {
+    const findUnique = mockPrismaService.task.findUnique;
+
     it('should return a task when it exists', async () => {
-      mockPrismaService.task.findUnique.mockResolvedValue(mockTask);
+      findUnique.mockResolvedValue(mockTask);
 
       const result = await service.findOne(mockTaskId, mockUserId);
 
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: {
           id: mockTaskId,
           userId: mockUserId,
@@ -193,12 +200,12 @@ describe('TasksService', () => {
     });
 
     it('should throw NotFoundException when task does not exist', async () => {
-      mockPrismaService.task.findUnique.mockResolvedValue(null);
+      findUnique.mockResolvedValue(null);
 
       await expect(service.findOne(mockTaskId, mockUserId)).rejects.toThrow(
         NotFoundException
       );
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: {
           id: mockTaskId,
           userId: mockUserId,
@@ -216,6 +223,9 @@ describe('TasksService', () => {
   });
 
   describe('updateTask', () => {
+    const findUnique = mockPrismaService.task.findUnique;
+    const update = mockPrismaService.task.update;
+
     it('should update a task when it exists and belongs to user', async () => {
       const updateTaskDto: UpdateTaskDto = {
         title: 'Updated Task',
@@ -228,17 +238,17 @@ describe('TasksService', () => {
         status: TaskStatus.IN_PROGRESS,
       };
 
-      mockPrismaService.task.findUnique.mockResolvedValue({ userId: mockUserId });
-      mockPrismaService.task.update.mockResolvedValue(updatedTask);
+      findUnique.mockResolvedValue({ userId: mockUserId });
+      update.mockResolvedValue(updatedTask);
 
       const result = await service.updateTask(mockTaskId, updateTaskDto, mockUserId);
 
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
 
-      expect(mockPrismaService.task.update).toHaveBeenCalledWith({
+      expect(update).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         data: updateTaskDto,
         select: {
@@ -258,16 +268,16 @@ describe('TasksService', () => {
         title: 'Updated Task',
       };
 
-      mockPrismaService.task.findUnique.mockResolvedValue(null);
+      findUnique.mockResolvedValue(null);
 
       await expect(
         service.updateTask(mockTaskId, updateTaskDto, mockUserId)
       ).rejects.toThrow(NotFoundException);
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
-      expect(mockPrismaService.task.update).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when task belongs to another user', async () => {
@@ -275,31 +285,34 @@ describe('TasksService', () => {
         title: 'Updated Task',
       };
 
-      mockPrismaService.task.findUnique.mockResolvedValue({ userId: 'another-user-id' });
+      findUnique.mockResolvedValue({ userId: 'another-user-id' });
 
       await expect(
         service.updateTask(mockTaskId, updateTaskDto, mockUserId)
       ).rejects.toThrow(NotFoundException);
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
-      expect(mockPrismaService.task.update).not.toHaveBeenCalled();
+      expect(update).not.toHaveBeenCalled();
     });
   });
 
   describe('deleteTask', () => {
+    const findUnique = mockPrismaService.task.findUnique;
+    const taskDelete = mockPrismaService.task.delete;
+
     it('should delete a task when it exists and belongs to user', async () => {
-      mockPrismaService.task.findUnique.mockResolvedValue({ userId: mockUserId });
-      mockPrismaService.task.delete.mockResolvedValue(mockTask);
+      findUnique.mockResolvedValue({ userId: mockUserId });
+      taskDelete.mockResolvedValue(mockTask);
 
       await service.deleteTask(mockTaskId, mockUserId);
 
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
-      expect(mockPrismaService.task.delete).toHaveBeenCalledWith({
+      expect(taskDelete).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: {
           id: true,
@@ -313,29 +326,29 @@ describe('TasksService', () => {
     });
 
     it('should throw NotFoundException when task does not exist', async () => {
-      mockPrismaService.task.findUnique.mockResolvedValue(null);
+      findUnique.mockResolvedValue(null);
 
       await expect(service.deleteTask(mockTaskId, mockUserId)).rejects.toThrow(
         NotFoundException
       );
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
-      expect(mockPrismaService.task.delete).not.toHaveBeenCalled();
+      expect(taskDelete).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundException when task belongs to another user', async () => {
-      mockPrismaService.task.findUnique.mockResolvedValue({ userId: 'another-user-id' });
+      findUnique.mockResolvedValue({ userId: 'another-user-id' });
 
       await expect(service.deleteTask(mockTaskId, mockUserId)).rejects.toThrow(
         NotFoundException
       );
-      expect(mockPrismaService.task.findUnique).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: mockTaskId },
         select: { userId: true },
       });
-      expect(mockPrismaService.task.delete).not.toHaveBeenCalled();
+      expect(taskDelete).not.toHaveBeenCalled();
     });
   });
 });
