@@ -7,9 +7,9 @@ export class RegisterDto extends BaseAuthDto {
   @MaxLength(100, { message: 'Name must not exceed 100 characters' })
   @IsString({ message: 'Name must be a string' })
   @IsNotEmpty({ message: 'Name is required' })
-  name!: string;
+  name: string;
 
   @Match('password', { message: 'Passwords do not match' })
   @IsNotEmpty({ message: 'Please confirm your password' })
-  confirmPassword!: string;
+  confirmPassword: string;
 }

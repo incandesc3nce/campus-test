@@ -10,7 +10,7 @@ import {
 export abstract class BaseAuthDto {
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email!: string;
+  email: string;
 
   @Matches(/(?=.*[0-9])/, {
     message: 'Password must contain at least one number',
@@ -25,5 +25,5 @@ export abstract class BaseAuthDto {
   @MaxLength(100, { message: 'Password must not exceed 100 characters' })
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password is required' })
-  password!: string;
+  password: string;
 }
