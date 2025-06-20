@@ -1,11 +1,11 @@
-import { UsersService } from '@/users/users.service';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
-import { HashingService } from '../shared/hashing/hashing.service';
-import { RegisterDto } from './dto/register.dto';
+import { UsersService } from '@/users/users.service';
 import { JwtPayload } from '@/shared/types/JwtPayload';
-import { AuthResponse } from '@/shared/types/AuthResponse';
+import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
+import { AuthResponseDto } from './dto/authResponse.dto';
+import { HashingService } from '../shared/hashing/hashing.service';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
 
   private jwtExpirationTime = '3d';
 
-  async login(loginDto: LoginDto): Promise<AuthResponse> {
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
 
     const isValidPassword = await this.hashingService.verifyPassword(
@@ -39,7 +39,7 @@ export class AuthService {
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthResponse> {
+  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
     const newUser = await this.usersService.createUser({
       email: registerDto.email,
       name: registerDto.name,
