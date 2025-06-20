@@ -6,6 +6,7 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthResponseDto } from './dto/authResponse.dto';
 import { HashingService } from '../shared/hashing/hashing.service';
+import { User } from 'generated/prisma';
 
 @Injectable()
 export class AuthService {
@@ -18,7 +19,13 @@ export class AuthService {
   private jwtExpirationTime = '3d';
 
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
-    const user = await this.usersService.findOneByEmail(loginDto.email);
+    let user: User;
+
+    try {
+      user = await this.usersService.findOneByEmail(loginDto.email);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
 
     const isValidPassword = await this.hashingService.verifyPassword(
       loginDto.password,

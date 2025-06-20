@@ -1,5 +1,5 @@
 import { PrismaService } from '@/shared/prisma/prisma.service';
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { User } from 'generated/prisma';
 import { CreateUserDto } from './dto/createUser.dto';
 import { HashingService } from '@/shared/hashing/hashing.service';
@@ -17,7 +17,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotFoundException('User not found');
     }
 
     return user;
@@ -28,7 +28,7 @@ export class UsersService {
       where: { id },
     });
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new NotFoundException('User not found');
     }
     return user;
   }
