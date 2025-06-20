@@ -4,12 +4,12 @@ import { PrismaService } from '@/shared/prisma/prisma.service';
 import { HashingService } from '@/shared/hashing/hashing.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { User } from 'generated/prisma';
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let prismaService: PrismaService;
-  let hashingService: HashingService;
+  let _prismaService: PrismaService;
+  let _hashingService: HashingService;
 
   const mockUser: User = {
     id: 'test-id',
@@ -24,31 +24,35 @@ describe('UsersService', () => {
     password: 'Password123',
   };
 
+  const mockPrismaService = {
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+  };
+
+  const mockHashingService = {
+    hashPassword: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
           provide: PrismaService,
-          useValue: {
-            user: {
-              findUnique: jest.fn(),
-              create: jest.fn(),
-            },
-          },
+          useValue: mockPrismaService,
         },
         {
           provide: HashingService,
-          useValue: {
-            hashPassword: jest.fn(),
-          },
+          useValue: mockHashingService,
         },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    prismaService = module.get<PrismaService>(PrismaService);
-    hashingService = module.get<HashingService>(HashingService);
+    _prismaService = module.get<PrismaService>(PrismaService);
+    _hashingService = module.get<HashingService>(HashingService);
   });
 
   it('should be defined', () => {
@@ -56,70 +60,69 @@ describe('UsersService', () => {
   });
 
   describe('findOneByEmail', () => {
+    const findUnique = mockPrismaService.user.findUnique;
+
     it('should return a user by email', async () => {
-      const findUniqueSpy = jest
-        .spyOn(prismaService.user, 'findUnique')
-        .mockResolvedValue(mockUser);
+      findUnique.mockResolvedValue(mockUser);
 
       const result = await service.findOneByEmail('test@example.com');
 
       expect(result).toEqual(mockUser);
-      expect(findUniqueSpy).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { email: 'test@example.com' },
       });
     });
-    it('should throw UnauthorizedException if user not found', async () => {
-      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
+
+    it('should throw NotFoundException if user not found', async () => {
+      findUnique.mockResolvedValue(null);
 
       await expect(service.findOneByEmail('doesnt_exist@example.com')).rejects.toThrow(
-        UnauthorizedException
+        NotFoundException
       );
     });
   });
 
   describe('findOneById', () => {
+    const findUnique = mockPrismaService.user.findUnique;
+
     it('should return a user if found', async () => {
-      const findUniqueSpy = jest
-        .spyOn(prismaService.user, 'findUnique')
-        .mockResolvedValue(mockUser);
+      findUnique.mockResolvedValue(mockUser);
 
       const result = await service.findOneById('test-id');
 
       expect(result).toEqual(mockUser);
-      expect(findUniqueSpy).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { id: 'test-id' },
       });
     });
 
-    it('should throw UnauthorizedException if user is not found', async () => {
-      jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
+    it('should throw NotFoundException if user is not found', async () => {
+      findUnique.mockResolvedValue(null);
 
       await expect(service.findOneById('nonexistent-id')).rejects.toThrow(
-        UnauthorizedException
+        NotFoundException
       );
     });
   });
 
   describe('createUser', () => {
+    const findUnique = mockPrismaService.user.findUnique;
+    const create = mockPrismaService.user.create;
+    const hashPassword = mockHashingService.hashPassword;
+
     it('should create and return a new user', async () => {
-      const findUniqueSpy = jest
-        .spyOn(prismaService.user, 'findUnique')
-        .mockResolvedValue(null);
-      const hashPasswordSpy = jest
-        .spyOn(hashingService, 'hashPassword')
-        .mockResolvedValue('hashedPassword123');
-      const createSpy = jest
-        .spyOn(prismaService.user, 'create')
-        .mockResolvedValue(mockUser);
+      findUnique.mockResolvedValue(null);
+      create.mockResolvedValue(mockUser);
+      hashPassword.mockResolvedValue('hashedPassword123');
 
       const result = await service.createUser(mockCreateUserDto);
 
       expect(result).toEqual(mockUser);
-      expect(findUniqueSpy).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { email: mockCreateUserDto.email },
       });
-      expect(hashPasswordSpy).toHaveBeenCalledWith(mockCreateUserDto.password);
-      expect(createSpy).toHaveBeenCalledWith({
+      expect(hashPassword).toHaveBeenCalledWith(mockCreateUserDto.password);
+      expect(create).toHaveBeenCalledWith({
         data: {
           email: mockCreateUserDto.email,
           name: mockCreateUserDto.name,
@@ -129,18 +132,16 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException if user with email already exists', async () => {
-      const findUniqueSpy = jest
-        .spyOn(prismaService.user, 'findUnique')
-        .mockResolvedValue(mockUser);
-      const createSpy = jest.spyOn(prismaService.user, 'create');
+      findUnique.mockResolvedValue(mockUser);
+      create.mockResolvedValue(mockUser);
 
       await expect(service.createUser(mockCreateUserDto)).rejects.toThrow(
         ConflictException
       );
-      expect(findUniqueSpy).toHaveBeenCalledWith({
+      expect(findUnique).toHaveBeenCalledWith({
         where: { email: mockCreateUserDto.email },
       });
-      expect(createSpy).not.toHaveBeenCalled();
+      expect(create).toHaveBeenCalled();
     });
   });
 });
