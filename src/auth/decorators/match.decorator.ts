@@ -1,13 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
 } from 'class-validator';
 
-export function Match(property: string, validationOptions?: ValidationOptions) {
+export function Match<T extends object>(
+  property: keyof T,
+  validationOptions?: ValidationOptions
+) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'match',
@@ -16,14 +16,14 @@ export function Match(property: string, validationOptions?: ValidationOptions) {
       constraints: [property],
       options: validationOptions,
       validator: {
-        validate(value: unknown, args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints;
-          const relatedValue = (args.object as any)[relatedPropertyName];
+        validate<V>(value: V, args: ValidationArguments) {
+          const [relatedPropertyName] = args.constraints as [keyof T];
+          const relatedValue = (args.object as T)[relatedPropertyName];
           return value === relatedValue;
         },
         defaultMessage(args: ValidationArguments) {
-          const [relatedPropertyName] = args.constraints;
-          return `${propertyName} must match ${relatedPropertyName}`;
+          const [relatedPropertyName] = args.constraints as [keyof T];
+          return `${propertyName} must match ${String(relatedPropertyName)}`;
         },
       },
     });
