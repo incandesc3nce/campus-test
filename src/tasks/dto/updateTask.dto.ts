@@ -1,4 +1,4 @@
-import { PartialType } from '@nestjs/mapped-types';
+import { PartialType } from '@nestjs/swagger';
 import { CreateTaskDto } from './createTask.dto';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { TaskStatus } from 'generated/prisma';
