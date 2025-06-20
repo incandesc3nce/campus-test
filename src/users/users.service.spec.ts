@@ -71,9 +71,9 @@ describe('UsersService', () => {
     it('should throw UnauthorizedException if user not found', async () => {
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
 
-      await expect(
-        service.findOneByEmail('doesnt_exist@example.com'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.findOneByEmail('doesnt_exist@example.com')).rejects.toThrow(
+        UnauthorizedException
+      );
     });
   });
 
@@ -95,7 +95,7 @@ describe('UsersService', () => {
       jest.spyOn(prismaService.user, 'findUnique').mockResolvedValue(null);
 
       await expect(service.findOneById('nonexistent-id')).rejects.toThrow(
-        UnauthorizedException,
+        UnauthorizedException
       );
     });
   });
@@ -135,7 +135,7 @@ describe('UsersService', () => {
       const createSpy = jest.spyOn(prismaService.user, 'create');
 
       await expect(service.createUser(mockCreateUserDto)).rejects.toThrow(
-        ConflictException,
+        ConflictException
       );
       expect(findUniqueSpy).toHaveBeenCalledWith({
         where: { email: mockCreateUserDto.email },

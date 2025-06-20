@@ -1,9 +1,5 @@
 import { PrismaService } from '@/shared/prisma/prisma.service';
-import {
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from 'generated/prisma';
 import { CreateUserDto } from './dto/createUser.dto';
 import { HashingService } from '@/shared/hashing/hashing.service';
@@ -12,7 +8,7 @@ import { HashingService } from '@/shared/hashing/hashing.service';
 export class UsersService {
   constructor(
     private prismaService: PrismaService,
-    private hashingService: HashingService,
+    private hashingService: HashingService
   ) {}
 
   async findOneByEmail(email: string): Promise<User> {

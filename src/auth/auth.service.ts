@@ -10,7 +10,7 @@ export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
-    private hashingService: HashingService,
+    private hashingService: HashingService
   ) {}
 
   async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
@@ -18,7 +18,7 @@ export class AuthService {
 
     const isValidPassword = await this.hashingService.verifyPassword(
       loginDto.password,
-      user.passwordHash,
+      user.passwordHash
     );
 
     if (!isValidPassword) {

@@ -12,10 +12,7 @@ export class HashingService {
     return hashedPassword;
   }
 
-  async verifyPassword(
-    password: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
+  async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
     return await verify(hashedPassword, password, {
       secret: this.HASH_SECRET,
     });
