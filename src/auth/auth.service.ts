@@ -5,6 +5,7 @@ import { LoginDto } from './dto/login.dto';
 import { HashingService } from '../shared/hashing/hashing.service';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from '@/shared/types/JwtPayload';
+import { AuthResponse } from '@/shared/types/AuthResponse';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,9 @@ export class AuthService {
     private hashingService: HashingService
   ) {}
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  private jwtExpirationTime = '3d';
+
+  async login(loginDto: LoginDto): Promise<AuthResponse> {
     const user = await this.usersService.findOneByEmail(loginDto.email);
 
     const isValidPassword = await this.hashingService.verifyPassword(
@@ -29,11 +32,14 @@ export class AuthService {
     const payload: JwtPayload = { sub: user.id, email: user.email };
 
     return {
-      accessToken: await this.jwtService.signAsync(payload),
+      accessToken: await this.jwtService.signAsync(payload, {
+        expiresIn: this.jwtExpirationTime,
+      }),
+      expiresIn: this.jwtExpirationTime,
     };
   }
 
-  async register(registerDto: RegisterDto): Promise<{ accessToken: string }> {
+  async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const newUser = await this.usersService.createUser({
       email: registerDto.email,
       name: registerDto.name,
@@ -43,7 +49,10 @@ export class AuthService {
     const payload = { sub: newUser.id, email: newUser.email };
 
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken: await this.jwtService.signAsync(payload, {
+        expiresIn: this.jwtExpirationTime,
+      }),
+      expiresIn: this.jwtExpirationTime,
     };
   }
 }
