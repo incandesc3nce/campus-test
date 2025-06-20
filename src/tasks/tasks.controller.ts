@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   HttpCode,
+  Query,
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/createTask.dto';
@@ -15,6 +16,7 @@ import { UpdateTaskDto } from './dto/updateTask.dto';
 import { AuthGuard } from '@/auth/auth.guard';
 import { CurrentUser } from '@/shared/decorators/currentUser.decorator';
 import { JwtPayload } from '@/shared/types/JwtPayload';
+import { TaskQueryDto } from './dto/queryTask.dto';
 
 @Controller('tasks')
 @UseGuards(AuthGuard)
@@ -27,8 +29,8 @@ export class TasksController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: JwtPayload) {
-    return this.tasksService.findAll(user.sub);
+  findAll(@Query() query: TaskQueryDto, @CurrentUser() user: JwtPayload) {
+    return this.tasksService.findAll(query, user.sub);
   }
 
   @Get(':id')

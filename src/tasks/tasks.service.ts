@@ -3,6 +3,8 @@ import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import { TaskResponseDto } from './dto/taskResponse.dto';
+import { TaskQueryDto } from './dto/queryTask.dto';
+import { FilteredTasksResponseDto } from './dto/filteredTaskResponse.dto';
 
 @Injectable()
 export class TasksService {
@@ -34,9 +36,13 @@ export class TasksService {
     return newTask;
   }
 
-  async findAll(userId: string): Promise<TaskResponseDto[]> {
+  async findAll(query: TaskQueryDto, userId: string): Promise<FilteredTasksResponseDto> {
+    const { status, offset, limit } = query;
+    const take = limit || 10;
+    const skip = offset || 0;
+
     const tasks = await this.prismaService.task.findMany({
-      where: { userId },
+      where: { userId, status },
       select: {
         id: true,
         title: true,
@@ -45,17 +51,30 @@ export class TasksService {
         createdAt: true,
         updatedAt: true,
       },
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
-    return tasks;
+    const total = await this.prismaService.task.count({
+      where: { userId, status },
+    });
+
+    return {
+      data: tasks,
+      total,
+      offset: skip,
+      limit: take,
+    };
   }
 
   async findOne(id: string, userId: string): Promise<TaskResponseDto> {
     const task = await this.prismaService.task.findUnique({
-      where: { id },
+      where: { id, userId },
       select: {
         id: true,
-        userId: true,
         title: true,
         description: true,
         status: true,
@@ -64,16 +83,11 @@ export class TasksService {
       },
     });
 
-    if (!task || task.userId !== userId) {
+    if (!task) {
       throw new NotFoundException('Task not found');
     }
 
-    const taskWithoutUserId: TaskResponseDto = {
-      ...task,
-      userId: undefined,
-    };
-
-    return taskWithoutUserId;
+    return task;
   }
 
   async updateTask(
