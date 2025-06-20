@@ -27,9 +27,11 @@ async function bootstrap() {
 
   const document = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
+  const PORT = process.env.PORT || 3000;
+  const HOST = process.env.HOST || '0.0.0.0';
   // start the application
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(PORT, HOST);
+  console.log(`🚀 Nest.js app running on http://${HOST}:${PORT}`);
 }
 
 void bootstrap();
