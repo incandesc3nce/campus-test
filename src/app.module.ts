@@ -17,6 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
         {
           ttl: 60000,
           limit: 100,
+          blockDuration: 60000,
         },
       ],
     }),
