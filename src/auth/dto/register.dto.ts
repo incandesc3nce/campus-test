@@ -1,7 +1,11 @@
 import { IsNotEmpty, MinLength, MaxLength, IsString } from 'class-validator';
 import { BaseAuthDto } from './baseAuth.dto';
 import { Match } from '../decorators/match.decorator';
+import { ApiSchema } from '@nestjs/swagger';
 
+@ApiSchema({
+  description: 'DTO для регистрации нового пользователя.',
+})
 export class RegisterDto extends BaseAuthDto {
   @MinLength(1, { message: 'Name must be at least 1 character long' })
   @MaxLength(100, { message: 'Name must not exceed 100 characters' })

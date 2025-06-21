@@ -1,10 +1,10 @@
 import {
   IsEmail,
   IsNotEmpty,
-  MinLength,
-  MaxLength,
   IsString,
   Matches,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export abstract class BaseAuthDto {
@@ -12,17 +12,16 @@ export abstract class BaseAuthDto {
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
 
-  @Matches(/(?=.*[0-9])/, {
-    message: 'Password must contain at least one number',
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d].+$/, {
+    message:
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number',
   })
-  @Matches(/(?=.*[A-Z])/, {
-    message: 'Password must contain at least one uppercase letter',
+  @MaxLength(100, {
+    message: 'Password must not exceed 100 characters',
   })
-  @Matches(/(?=.*[a-z])/, {
-    message: 'Password must contain at least one lowercase letter',
+  @MinLength(8, {
+    message: 'Password must be at least 8 characters long',
   })
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(100, { message: 'Password must not exceed 100 characters' })
   @IsString({ message: 'Password must be a string' })
   @IsNotEmpty({ message: 'Password is required' })
   password: string;
