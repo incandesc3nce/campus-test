@@ -26,11 +26,11 @@ describe('TasksController (e2e)', () => {
       .send(userData);
 
     bearerToken = `Bearer ${(registerRes.body as AuthResponseDto).accessToken}`;
-  });
+  }, 15000);
 
   afterAll(async () => {
     await app.close();
-  });
+  }, 15000);
 
   const taskData = {
     title: 'Test Task',

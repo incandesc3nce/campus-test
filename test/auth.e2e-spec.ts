@@ -8,11 +8,11 @@ describe('AuthController (e2e)', () => {
 
   beforeAll(async () => {
     app = await setupTestApp();
-  });
+  }, 15000);
 
   afterAll(async () => {
     await app.close();
-  });
+  }, 15000);
 
   const userData = {
     email: 'testuser@nomail.com',

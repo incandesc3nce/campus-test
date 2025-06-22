@@ -1,19 +1,12 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { App } from 'supertest/types';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
 import { AppModule } from '@/app.module';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 
 export async function setupTestApp(): Promise<INestApplication<App>> {
   const moduleFixture: TestingModule = await Test.createTestingModule({
-    imports: [
-      AppModule,
-      ConfigModule.forRoot({
-        isGlobal: true,
-        envFilePath: '.env.test',
-      }),
-    ],
+    imports: [AppModule],
   }).compile();
 
   const app = moduleFixture.createNestApplication();
