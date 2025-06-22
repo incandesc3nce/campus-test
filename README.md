@@ -1,98 +1,302 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Backend для управления задачами (To-Do)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Это приложение предоставляет REST API для управления задачами, позволяя пользователям создавать, обновлять и удалять задачи, а также получать список всех своих задач. Действия с задачами защищены авторизацией по JWT и привязаны к отдельному пользователю.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Приложение было выполнено в качестве тестового задания для [Кампуса](https://campusapp.ru/).
 
-## Description
+## Технологии
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+![Tech Stack](https://go-skill-icons.vercel.app/api/icons?i=ts,nest,postgres,prisma,swagger,jest)
 
-## Project setup
+## Что было сделано
 
-```bash
-$ npm install
-```
+- [x] Система регистрации и аутентификации пользователей с использованием JWT
+- [x] Хэширование паролей с использованием argon2
+- [x] CRUD операции для задач c привязкой к пользователю
+- [x] Фильтрация задач по статусу (TODO, IN_PROGRESS, DONE) с пагинацией
+- [x] Swagger документация для API с примерами запросов/ответов
+- [x] Обработка ошибок и валидация входящих данных
+- [x] Unit-тесты и E2E-тесты
+- [x] Docker-контейнеризация
+- [x] Rate limiting
 
-## Compile and run the project
+## Установка и запуск
+
+### Способ 1: Docker
+
+1. Убедитесь, что у вас установлен Docker.
+
+2. Склонируйте репозиторий:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/incandesc3nce/campus-test
 ```
 
-## Run tests
+3. Перейдите в директорию проекта:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cd campus-test
 ```
 
-## Deployment
+4. Создайте файл `.env` и заполните его необходимыми переменными окружения. Пример файла `.env`:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```python
+# URL базы данных PostgreSQL
+DATABASE_URL="postgresql://user:password@localhost:5432/todo"
+# JWT секрет для подписи токенов
+JWT_SECRET="your_jwt_secret"
+# HASH_SECRET для хэширования паролей
+HASH_SECRET="your_hash_secret"
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+5. Соберите образ и запустите контейнер приложения:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up -d --remove-orphans --build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+При уже собранном образе можно запустить без пересборки:
 
-## Resources
+```bash
+docker compose up -d --remove-orphans
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+6. Примените схему базы данных к удаленной БД:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+docker compose run --rm app npx prisma db push
+```
 
-## Support
+7. Приложение будет доступно по адресу: [http://localhost:3000](http://localhost:3000)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Способ 2: Локальный запуск
 
-## Stay in touch
+1. Убедитесь, что у вас установлен Node.js 22 или выше и npm.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+2. Склонируйте репозиторий:
 
-## License
+```bash
+git clone https://github.com/incandesc3nce/campus-test
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+3. Перейдите в директорию проекта:
+
+```bash
+cd campus-test
+```
+
+4. Создайте файл `.env` и заполните его необходимыми переменными окружения. Пример файла `.env`:
+
+```python
+# URL базы данных PostgreSQL
+DATABASE_URL="postgresql://user:password@localhost:5432/todo"
+# JWT секрет для подписи токенов
+JWT_SECRET="your_jwt_secret"
+# HASH_SECRET для хэширования паролей
+HASH_SECRET="your_hash_secret"
+```
+
+5. Установите зависимости:
+
+```bash
+npm install
+```
+
+5. Примените схему базы данных к удаленной БД:
+
+```bash
+npm run prisma:push
+```
+
+6. Сгенерируйте клиент Prisma, если он еще не сгенерирован:
+
+```bash
+npm run prisma:generate
+```
+
+7. Запустите приложение:
+
+```bash
+npm run start
+```
+
+8. Приложение будет доступно по адресу: [http://localhost:3000](http://localhost:3000)
+
+## Использование API
+
+> API также имеет Swagger документацию. Для этого запустите приложение и перейдите по адресу [http://localhost:3000/api](http://localhost:3000/api).
+
+### Аутентификация
+
+Для получения JWT токена есть два эндпоинта:
+
+- **POST** `/v1/auth/register` - Регистрация нового пользователя. В теле запроса необходимо передать следующие поля:
+  - `email` - email пользователя
+  - `name` - имя пользователя
+  - `password` - пароль пользователя
+  - `confirmPassword` - подтверждение пароля
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `201 Created` - пользователь успешно зарегистрирован
+- `400 Bad Request` - ошибка валидации данных (например, не совпадают пароли или указан неверный email)
+- `409 Conflict` - пользователь с таким email уже существует
+
+Пример запроса CURL:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/v1/auth/register' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "user@nomail.com",
+  "name": "username",
+  "password": "SecurePassword123",
+  "confirmPassword": "SecurePassword123"
+}'
+```
+
+- **POST** `/v1/auth/login` - Вход в аккаунт пользователя. В теле запроса необходимо передать следующие поля:
+  - `email` - email пользователя
+  - `password` - пароль пользователя
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `200 OK` - пользователь успешно авторизован, в ответе будет возвращен JWT токен
+- `400 Bad Request` - ошибка валидации данных (email или пароль не подходят под требования)
+- `401 Unauthorized` - неверный email или пароль
+
+Пример запроса CURL:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/v1/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "email": "user@email.com",
+  "password": "Password123"
+}'
+```
+
+### Задачи
+
+Для работы с задачами необходимо передать JWT токен в заголовке `Authorization` в формате `Bearer <token>`. При отсутствии токена или его недействительности будет возвращаться ошибка **401 Unauthorized**.
+
+- **GET** `/v1/tasks` - Получение списка задач текущего пользователя. Можно использовать параметры запроса для фильтрации и пагинации:
+  - `status` - статус задачи (TODO, IN_PROGRESS, DONE)
+  - `page` - номер страницы (по умолчанию 1)
+  - `limit` - количество задач на странице (по умолчанию 10)
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `200 OK` - список задач успешно получен
+- `400 Bad Request` - ошибка валидации параметров запроса (например, неверный статус задачи)
+
+Пример запроса CURL:
+
+```bash
+curl -X 'GET' \
+  'http://localhost:3000/v1/tasks?status=IN_PROGRESS&offset=5&limit=10' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+- **POST** `/v1/tasks` - Создание новой задачи. В теле запроса обязательным полем является только `title`:
+  - `title` - заголовок задачи
+  - `description` - описание задачи (необязательное поле, по умолчанию null)
+  - `status` - статус задачи (TODO, IN_PROGRESS, DONE) (необязательное поле, по умолчанию TODO)
+
+Пример запроса CURL:
+
+```bash
+curl -X 'POST' \
+  'http://localhost:3000/v1/tasks' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "string",
+  "description": "string",
+  "status": "TODO"
+}'
+```
+
+- **GET** `/v1/tasks/{id}` - Получение конкретной задачи по ID. В URL необходимо передать ID задачи.
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `200 OK` - задача успешно найдена и возвращена
+- `404 Not Found` - задача с указанным ID не найдена или не принадлежит текущему пользователю
+- `401 Unauthorized` - отсутствует или недействительный токен авторизации
+
+Пример запроса CURL:
+
+```bash
+curl -X 'GET' \
+  'http://localhost:3000/v1/tasks/123e4567-e89b-12d3-a456-426614174000' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+- **PATCH** `/v1/tasks/{id}` - Обновление существующей задачи. В URL необходимо передать ID задачи. В теле запроса можно передать любые из следующих полей для обновления:
+  - `title` - новый заголовок задачи
+  - `description` - новое описание задачи
+  - `status` - новый статус задачи (TODO, IN_PROGRESS, DONE)
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `200 OK` - задача успешно обновлена
+- `400 Bad Request` - ошибка валидации данных (например, неверный статус задачи)
+- `404 Not Found` - задача с указанным ID не найдена или не принадлежит текущему пользователю
+- `401 Unauthorized` - отсутствует или недействительный токен авторизации
+
+Пример запроса CURL:
+
+```bash
+curl -X 'PATCH' \
+  'http://localhost:3000/v1/tasks/123e4567-e89b-12d3-a456-426614174000' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "title": "Обновленный заголовок",
+  "status": "IN_PROGRESS"
+}'
+```
+
+- **DELETE** `/v1/tasks/{id}` - Удаление задачи. В URL необходимо передать ID задачи.
+
+Эндпоинт может вернуть следующие коды ответа:
+
+- `204 No Content` - задача успешно удалена
+- `404 Not Found` - задача с указанным ID не найдена или не принадлежит текущему пользователю
+- `401 Unauthorized` - отсутствует или недействительный токен авторизации
+
+Пример запроса CURL:
+
+```bash
+curl -X 'DELETE' \
+  'http://localhost:3000/v1/tasks/123e4567-e89b-12d3-a456-426614174000' \
+  -H 'accept: application/json' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Проверка состояния сервера
+
+- **GET** `/health` - Проверка состояния сервера. Возвращает статус 200 OK, если сервер работает, и 503 если имееются проблемы.
+
+Пример запроса CURL:
+
+```bash
+curl -X 'GET' \
+  'http://localhost:3000/health' \
+  -H 'accept: application/json'
+```
+
+## Лицензия
+
+[LICENSE](LICENSE) 
+
+2025 © [incandesc3nce](https://github.com/incandesc3nce). All Rights Reserved.
