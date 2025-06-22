@@ -51,6 +51,7 @@ export class TasksController {
    * Принимает заголовок, описание и статус задачи.
    */
   @Post()
+  @HttpCode(201)
   @ApiDocumentTasksCreate()
   create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: JwtPayload) {
     return this.tasksService.createTask(createTaskDto, user.sub);
