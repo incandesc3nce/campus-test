@@ -23,6 +23,7 @@ async function bootstrap() {
     .setTitle('Сервис управления задачами (REST API)')
     .setDescription('Тестовое задание для Кампуса')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
 
   const document = () => SwaggerModule.createDocument(app, config);
