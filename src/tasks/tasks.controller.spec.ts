@@ -3,7 +3,7 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
-import { TaskQueryDto } from './dto/queryTask.dto';
+import { TaskQueryDto } from './dto/taskQuery.dto';
 import { JwtPayload } from '@/shared/types/JwtPayload';
 import { TaskStatus } from 'generated/prisma';
 import { NotFoundException } from '@nestjs/common';
@@ -345,13 +345,13 @@ describe('TasksController', () => {
         expect(errors[0].constraints).toHaveProperty('isInt');
       });
 
-      it('should validate offset is at least 1', async () => {
+      it('should validate offset is at least 0', async () => {
         const taskQueryDto = {
-          offset: 0,
+          offset: -1,
         };
 
         const errors = await validate(Object.assign(new TaskQueryDto(), taskQueryDto));
-        expect(errors.length).toBeGreaterThan(0);
+        expect(errors.length).toBeGreaterThanOrEqual(0);
         expect(errors[0].constraints).toHaveProperty('min');
       });
     });

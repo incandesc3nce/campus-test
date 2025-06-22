@@ -3,7 +3,7 @@ import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import { TaskResponseDto } from './dto/taskResponse.dto';
-import { TaskQueryDto } from './dto/queryTask.dto';
+import { TaskQueryDto } from './dto/taskQuery.dto';
 import { FilteredTasksResponseDto } from './dto/filteredTaskResponse.dto';
 
 @Injectable()

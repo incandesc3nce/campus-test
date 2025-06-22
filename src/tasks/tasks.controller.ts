@@ -16,7 +16,7 @@ import { UpdateTaskDto } from './dto/updateTask.dto';
 import { AuthGuard } from '@/auth/auth.guard';
 import { CurrentUser } from '@/shared/decorators/currentUser.decorator';
 import { JwtPayload } from '@/shared/types/JwtPayload';
-import { TaskQueryDto } from './dto/queryTask.dto';
+import { TaskQueryDto } from './dto/taskQuery.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import {
   ApiDocumentTasksCreate,

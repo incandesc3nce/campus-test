@@ -3,7 +3,7 @@ import { TasksService } from './tasks.service';
 import { PrismaService } from '@/shared/prisma/prisma.service';
 import { CreateTaskDto } from './dto/createTask.dto';
 import { UpdateTaskDto } from './dto/updateTask.dto';
-import { TaskQueryDto } from './dto/queryTask.dto';
+import { TaskQueryDto } from './dto/taskQuery.dto';
 import { TaskStatus } from 'generated/prisma';
 import { NotFoundException } from '@nestjs/common';
 

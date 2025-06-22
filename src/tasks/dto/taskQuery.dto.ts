@@ -13,9 +13,9 @@ export class TaskQueryDto {
 
   @IsOptional()
   @IsInt({ message: 'Offset must be an integer' })
-  @Min(1, { message: 'Offset must be at least 1' })
+  @Min(0, { message: 'Offset must be at least 0' })
   @Type(() => Number)
-  offset?: number = 1;
+  offset?: number = 0;
 
   @IsOptional()
   @IsInt({ message: 'Limit must be an integer' })
