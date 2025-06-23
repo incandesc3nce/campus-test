@@ -3,7 +3,7 @@ import * as request from 'supertest';
 import { App } from 'supertest/types';
 import { setupTestApp } from './utils/setupTestApp';
 import { TaskResponseDto } from '@/tasks/dto/taskResponse.dto';
-import { AuthResponseDto } from '@/auth/dto/ФuthResponse.dto';
+import { AuthResponseDto } from '@/auth/dto/authResponse.dto';
 import { FilteredTasksResponseDto } from '@/tasks/dto/filteredTaskResponse.dto';
 
 describe('TasksController (e2e)', () => {

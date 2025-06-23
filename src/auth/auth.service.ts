@@ -4,7 +4,7 @@ import { UsersService } from '@/users/users.service';
 import { JwtPayload } from '@/shared/types/JwtPayload';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { AuthResponseDto } from './dto/authRespons.dto';
+import { AuthResponseDto } from './dto/authResponse.dto';
 import { HashingService } from '../shared/hashing/hashing.service';
 import { User } from 'generated/prisma';
 
