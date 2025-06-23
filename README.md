@@ -45,7 +45,7 @@ cd campus-test
 DATABASE_URL="postgresql://user:password@localhost:5432/todo"
 # JWT секрет для подписи токенов
 JWT_SECRET="your_jwt_secret"
-# HASH_SECRET для хэширования паролей
+# Секрет для хэширования паролей
 HASH_SECRET="your_hash_secret"
 ```
 
@@ -92,7 +92,7 @@ cd campus-test
 DATABASE_URL="postgresql://user:password@localhost:5432/todo"
 # JWT секрет для подписи токенов
 JWT_SECRET="your_jwt_secret"
-# HASH_SECRET для хэширования паролей
+# Секрет для хэширования паролей
 HASH_SECRET="your_hash_secret"
 ```
 
